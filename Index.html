@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator - PMC Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .form-section {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #eee;
+        }
+
+        .preview-section {
+            flex: 1;
+            padding: 30px;
+            background: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+
+        .invoice {
+            border: 2px solid #333;
+            padding: 0;
+            background: white;
+            font-family: 'Times New Roman', serif;
+            transform: scale(0.8);
+            transform-origin: top left;
+            width: 125%;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #333;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 50px;
+            max-width: 120px;
+            margin-right: 10px;
+        }
+
+        .company-info {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .invoice-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .invoice-body {
+            padding: 15px;
+        }
+
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .left-details {
+            flex: 1;
+        }
+
+        .right-details {
+            flex: 1;
+            text-align: right;
+        }
+
+        .detail-row {
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .detail-label {
+            display: inline-block;
+            width: 120px;
+            font-weight: normal;
+        }
+
+        .month-year-box {
+            border: 2px solid #333;
+            padding: 8px;
+            margin: 15px 0;
+            text-align: center;
+            background: #e3f2fd;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .payment-limit {
+            text-align: center;
+            font-style: italic;
+            font-size: 12px;
+            text-decoration: underline;
+            margin: 15px 0;
+        }
+
+        .payment-info {
+            background: #e3f2fd;
+            padding: 10px;
+            text-align: center;
+            font-size: 10px;
+            color: #1976d2;
+            border-top: 1px solid #333;
+        }
+
+        .customers-section {
+            margin-top: 20px;
+        }
+
+        .customer-item {
+            background: #f8f9fa;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .customer-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .print-controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .color-inputs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .color-input {
+            width: 40px !important;
+            height: 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+            
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            
+            .invoice {
+                transform: none;
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .invoice-page {
+                page-break-after: always;
+                margin-bottom: 0;
+            }
+        }
+
+        .logo-upload {
+            margin-bottom: 8px;
+        }
+
+        .current-logo {
+            max-width: 80px;
+            max-height: 50px;
+            margin-top: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-button {
+            padding: 8px 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        .invoice-count {
+            margin-top: 10px;
+        }
+        
+        .invoice-count input {
+            width: 60px !important;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧾 Invoice Generator - PMC Style</h1>
+            <p>Buat invoice profesional dengan mudah</p>
+        </div>
+
+        <div class="main-content">
+            <div class="form-section">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="showTab('single')">Single Invoice</button>
+                    <button class="tab-button" onclick="showTab('batch')">Batch Invoice</button>
+                    <button class="tab-button" onclick="showTab('settings')">Settings</button>
+                </div>
+
+                <div id="single-tab" class="tab-content active">
+                    <h3>📝 Data Invoice</h3>
+                    <div class="form-group">
+                        <label>ID PEL:</label>
+                        <input type="text" id="idpel" value="pmc/dt/001/2024" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Nama Pelanggan:</label>
+                        <input type="text" id="nama" value="Bpk ade odin" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Kapasitas/Mbps:</label>
+                        <input type="text" id="kapasitas" value="3 mbps" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Area Pemasangan:</label>
+                        <input type="text" id="area" value="kp.lebaksiuh 2" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Rp. Tagihan:</label>
+                        <input type="number" id="tagihan" value="100000" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Sisa Tagihan:</label>
+                        <input type="number" id="sisa" value="0" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Bayar:</label>
+                        <input type="number" id="total" value="100000" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Bulan/Tahun:</label>
+                        <input type="text" id="bulanTahun" value="JANUARI 2024" onchange="updatePreview()">
+                    </div>
+                    <div class="form-group invoice-count">
+                        <label>Jumlah Invoice dalam 1 kertas:</label>
+                        <input type="number" id="invoiceCount" min="1" max="10" value="1">
+                    </div>
+                </div>
+
+                <div id="batch-tab" class="tab-content">
+                    <h3>📋 Batch Invoice</h3>
+                    <div class="customers-section">
+                        <div class="form-group">
+                            <button class="btn btn-success" onclick="addCustomer()">+ Tambah Pelanggan</button>
+                        </div>
+                        <div id="customers-list"></div>
+                    </div>
+                </div>
+
+                <div id="settings-tab" class="tab-content">
+                    <h3>⚙️ Pengaturan</h3>
+                    <div class="form-group">
+                        <label>Upload Logo:</label>
+                        <input type="file" id="logoUpload" accept="image/*" onchange="updateLogo()">
+                        <img id="currentLogo" class="current-logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiB2aWV3Qm94PSIwIDAgMTAwIDYwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjZjA2MjkyIi8+CjxjaXJjbGUgY3g9IjIwIiBjeT0iMzAiIHI9IjEwIiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0zNSAyMEw0NSAzMEwzNSA0MEg1NVYyMEgzNVoiIGZpbGw9IiNmZmYiLz4KPHN2ZyB4PSI2MCIgeT0iMTUiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCI+CjxwYXRoIGQ9Ik0wIDEwTDEwIDFMMjAgMTBMMTAgMjBMMCAxMFoiIGZpbGw9IiM0ZGY0ZmYiLz4KPHN2ZyB4PSIwIiB5PSIxNSIgd2lkdGg9IjMwIiBoZWlnaHQ9IjMwIj4KPHBhdGggZD0iTTEwIDVMMjAgMTBMMTAgMjBMMCAxMEwxMCA1WiIgZmlsbD0iIzRkZjRmZiIvPgo8L3N2Zz4KPC9zdmc+Cg==" alt="Logo">
+                    </div>
+                    <div class="form-group">
+                        <label>Warna Header:</label>
+                        <div class="color-inputs">
+                            <input type="color" id="headerColor" class="color-input" value="#e3f2fd" onchange="updatePreview()">
+                            <span>Warna latar belakang header</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Warna Border:</label>
+                        <div class="color-inputs">
+                            <input type="color" id="borderColor" class="color-input" value="#333333" onchange="updatePreview()">
+                            <span>Warna garis border</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Warna Teks:</label>
+                        <div class="color-inputs">
+                            <input type="color" id="textColor" class="color-input" value="#333333" onchange="updatePreview()">
+                            <span>Warna teks utama</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ukuran Font:</label>
+                        <select id="fontSize" onchange="updatePreview()">
+                            <option value="small">Kecil</option>
+                            <option value="medium" selected>Sedang</option>
+                            <option value="large">Besar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="print-controls">
+                    <button class="btn" onclick="printInvoice()">🖨️ Print Invoice</button>
+                    <button class="btn btn-success" onclick="printAllCustomers()">🖨️ Print Semua Pelanggan</button>
+                    <button class="btn btn-warning" onclick="downloadPDF()">📄 Download PDF</button>
+                </div>
+            </div>
+
+            <div class="preview-section">
+                <h3>👁️ Preview Invoice</h3>
+                <div id="invoice-preview">
+                    <div class="invoice">
+                        <div class="invoice-header">
+                            <div class="logo-section">
+                                <img id="previewLogo" class="logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiB2aWV3Qm94PSIwIDAgMTAwIDYwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjZjA2MjkyIi8+CjxjaXJjbGUgY3g9IjIwIiBjeT0iMzAiIHI9IjEwIiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0zNSAyMEw0NSAzMEwzNSA0MEg1NVYyMEgzNVoiIGZpbGw9IiNmZmYiLz4KPHN2ZyB4PSI2MCIgeT0iMTUiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCI+CjxwYXRoIGQ9Ik0wIDEwTDEwIDFMMjAgMTBMMTAgMjBMMCAxMFoiIGZpbGw9IiM0ZGY0ZmYiLz4KPHN2ZyB4PSIwIiB5PSIxNSIgd2lkdGg9IjMwIiBoZWlnaHQ9IjMwIj4KPHBhdGggZD0iTTEwIDVMMjAgMTBMMTAgMjBMMCAxMEwxMCA1WiIgZmlsbD0iIzRkZjRmZiIvPgo8L3N2Zz4KPC9zdmc+Cg==" alt="PMC Logo">
+                                <div class="company-info">
+                                    <div>Prima Inovasi Cybertek</div>
+                                    <div>Digital Technology</div>
+                                </div>
+                            </div>
+                            <div class="invoice-title">INVOICE</div>
+                        </div>
+                        <div class="invoice-body">
+                            <div class="invoice-details">
+                                <div class="left-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">ID PEL</span>
+                                        <span>: </span>
+                                        <span id="preview-idpel">pmc/dt/001/2024</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Nama Pelanggan</span>
+                                        <span>: </span>
+                                        <span id="preview-nama">Bpk ade odin</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Kapasitas / Mbps</span>
+                                        <span>: </span>
+                                        <span id="preview-kapasitas">3 mbps</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Area Pemasangan</span>
+                                        <span>: </span>
+                                        <span id="preview-area">kp.lebaksiuh 2</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Rp.Tagihan</span>
+                                        <span>: </span>
+                                        <span id="preview-tagihan">100.000</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Sisa Tagihan</span>
+                                        <span>: </span>
+                                        <span id="preview-sisa"></span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Total Bayar Rp</span>
+                                        <span>: </span>
+                                        <span id="preview-total">100.000</span>
+                                    </div>
+                                </div>
+                                <div class="right-details">
+                                    <div class="month-year-box">
+                                        <div>BULAN / TAHUN</div>
+                                        <div id="preview-bulan">JANUARI 2024</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="payment-limit">
+                                <u>BATAS PEMBAYARAN SAMPAI TGL 10</u>
+                            </div>
+                            <div class="payment-info">
+                                <div><strong>PEMBAYARAN BISA MELALUI ALFAMART DAN INDOMART</strong></div>
+                                <div><strong>BCA 3770598833 DANA 085872121214</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="print-area" class="print-area" style="display: none;"></div>
+
+    <script>
+        let customers = [];
+        let logoData = null;
+
+        function showTab(tab) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tab + '-tab').classList.add('active');
+            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+        }
+
+        function formatNumber(number) {
+            return new Intl.NumberFormat('id-ID').format(number);
+        }
+
+        function updatePreview() {
+            const idpel = document.getElementById('idpel').value;
+            const nama = document.getElementById('nama').value;
+            const kapasitas = document.getElementById('kapasitas').value;
+            const area = document.getElementById('area').value;
+            const tagihan = document.getElementById('tagihan').value;
+            const sisa = document.getElementById('sisa').value;
+            const total = document.getElementById('total').value;
+            const bulanTahun = document.getElementById('bulanTahun').value;
+            const fontSize = document.getElementById('fontSize').value;
+
+            document.getElementById('preview-idpel').textContent = idpel;
+            document.getElementById('preview-nama').textContent = nama;
+            document.getElementById('preview-kapasitas').textContent = kapasitas;
+            document.getElementById('preview-area').textContent = area;
+            document.getElementById('preview-tagihan').textContent = formatNumber(tagihan);
+            document.getElementById('preview-sisa').textContent = sisa ? formatNumber(sisa) : '';
+            document.getElementById('preview-total').textContent = formatNumber(total);
+            document.getElementById('preview-bulan').textContent = bulanTahun;
+
+            // Update colors
+            const headerColor = document.getElementById('headerColor').value;
+            const borderColor = document.getElementById('borderColor').value;
+            const textColor = document.getElementById('textColor').value;
+
+            const invoice = document.querySelector('.invoice');
+            const invoiceHeader = document.querySelector('.invoice-header');
+            const monthBox = document.querySelector('.month-year-box');
+            const paymentInfo = document.querySelector('.payment-info');
+
+            invoice.style.borderColor = borderColor;
+            invoice.style.color = textColor;
+            invoiceHeader.style.backgroundColor = headerColor;
+            invoiceHeader.style.borderColor = borderColor;
+            monthBox.style.borderColor = borderColor;
+            monthBox.style.backgroundColor = headerColor;
+            paymentInfo.style.backgroundColor = headerColor;
+            
+            // Update font size
+            let size;
+            switch(fontSize) {
+                case 'small':
+                    size = '10px';
+                    break;
+                case 'large':
+                    size = '14px';
+                    break;
+                default:
+                    size = '12px';
+            }
+            
+            document.querySelectorAll('.detail-row').forEach(row => {
+                row.style.fontSize = size;
+            });
+            document.querySelector('.company-info').style.fontSize = (parseInt(size) - 2) + 'px';
+            document.querySelector('.payment-info').style.fontSize = (parseInt(size) - 2) + 'px';
+            document.querySelector('.payment-limit').style.fontSize = size;
+            document.querySelector('.month-year-box').style.fontSize = size;
+        }
+
+        function updateLogo() {
+            const file = document.getElementById('logoUpload').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logoData = e.target.result;
+                    document.getElementById('currentLogo').src = logoData;
+                    document.getElementById('previewLogo').src = logoData;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function addCustomer() {
+            const customer = {
+                id: Date.now(),
+                idpel: `pmc/dt/${String(customers.length + 1).padStart(3, '0')}/2024`,
+                nama: '',
+                kapasitas: '3 mbps',
+                area: '',
+                tagihan: 100000,
+                sisa: 0,
+                total: 100000,
+                bulanTahun: 'JANUARI 2024'
+            };
+            customers.push(customer);
+            renderCustomers();
+        }
+
+        function removeCustomer(id) {
+            customers = customers.filter(c => c.id !== id);
+            renderCustomers();
+        }
+
+        function updateCustomer(id, field, value) {
+            const customer = customers.find(c => c.id === id);
+            if (customer) {
+                customer[field] = value;
+            }
+        }
+
+        function renderCustomers() {
+            const container = document.getElementById('customers-list');
+            container.innerHTML = '';
+
+            customers.forEach((customer, index) => {
+                const customerDiv = document.createElement('div');
+                customerDiv.className = 'customer-item';
+                customerDiv.innerHTML = `
+                    <h4>Pelanggan ${index + 1}</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input type="text" placeholder="ID PEL" value="${customer.idpel}" 
+                               onchange="updateCustomer(${customer.id}, 'idpel', this.value)">
+                        <input type="text" placeholder="Nama Pelanggan" value="${customer.nama}" 
+                               onchange="updateCustomer(${customer.id}, 'nama', this.value)">
+                        <input type="text" placeholder="Kapasitas" value="${customer.kapasitas}" 
+                               onchange="updateCustomer(${customer.id}, 'kapasitas', this.value)">
+                        <input type="text" placeholder="Area Pemasangan" value="${customer.area}" 
+                               onchange="updateCustomer(${customer.id}, 'area', this.value)">
+                        <input type="number" placeholder="Tagihan" value="${customer.tagihan}" 
+                               onchange="updateCustomer(${customer.id}, 'tagihan', this.value)">
+                        <input type="number" placeholder="Sisa Tagihan" value="${customer.sisa}" 
+                               onchange="updateCustomer(${customer.id}, 'sisa', this.value)">
+                        <input type="number" placeholder="Total Bayar" value="${customer.total}" 
+                               onchange="updateCustomer(${customer.id}, 'total', this.value)">
+                        <input type="text" placeholder="Bulan/Tahun" value="${customer.bulanTahun}" 
+                               onchange="updateCustomer(${customer.id}, 'bulanTahun', this.value)">
+                    </div>
+                    <div class="customer-controls">
+                        <button class="btn" onclick="removeCustomer(${customer.id})">❌ Hapus</button>
+                    </div>
+                `;
+                container.appendChild(customerDiv);
+            });
+        }
+
+        function generateInvoiceHTML(customerData) {
+            const headerColor = document.getElementById('headerColor').value;
+            const borderColor = document.getElementById('borderColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const currentLogo = document.getElementById('previewLogo').src;
+            const fontSize = document.getElementById('fontSize').value;
+            
+            let size;
+            switch(fontSize) {
+                case 'small':
+                    size = '10px';
+                    break;
+                case 'large':
+                    size = '14px';
+                    break;
+                default:
+                    size = '12px';
+            }
+
+            return `
+                <div class="invoice" style="border-color: ${borderColor}; color: ${textColor};">
+                    <div class="invoice-header" style="background-color: ${headerColor}; border-color: ${borderColor};">
+                        <div class="logo-section">
+                            <img class="logo" src="${currentLogo}" alt="Logo">
+                            <div class="company-info" style="font-size: ${parseInt(size)-2}px;">
+                                <div>Prima Media Center</div>
+                                <div>Digital Technology</div>
+                            </div>
+                        </div>
+                        <div class="invoice-title" style="font-size: ${parseInt(size)+16}px;">INVOICE</div>
+                    </div>
+                    <div class="invoice-body">
+                        <div class="invoice-details">
+                            <div class="left-details">
+                                <div class="detail-row" style="font-size: ${size}">
+                                    <span class="detail-label">ID PEL</span>
+                                    <span>: ${customerData.idpel}</span>
+                                </div>
+                                <div class="detail-row" style="font-size: ${size}">
+                                    <span class="detail-label">Nama Pelanggan</span>
+                                    <span>: ${customerData.nama}</span>
+                                </div>
+                                <div class="detail-row" style="font-size: ${size}">
+                                    <span class="detail-label">Kapasitas / Mbps</span>
+                                    <span>: ${customerData.kapasitas}</span>
+                                </div>
+                                <div class="detail-row" style="font-size: ${size}">
+                                    <span class="detail-label">Area Pemasangan</span>
+                                    <span>: ${customerData.area}</span>
+                                </div>
+                                <div class="detail-row" style="font-size: ${size}">
+                                    <span class="detail-label">Rp.Tagihan</span>
+                                    <span>: ${formatNumber(customerData.tagihan)}</span>
+                                </div>
+                                <div class="detail-row" style="font-size: ${size}">
+                                    <span class="detail-label">Sisa Tagihan</span>
+                                    <span>: ${customerData.sisa ? formatNumber(customerData.sisa) : ''}</span>
+                                </div>
+                                <div class="detail-row" style="font-size: ${size}">
+                                    <span class="detail-label">Total Bayar Rp</span>
+                                    <span>: ${formatNumber(customerData.total)}</span>
+                                </div>
+                            </div>
+                            <div class="right-details">
+                                <div class="month-year-box" style="border-color: ${borderColor}; background-color: ${headerColor}; font-size: ${size}">
+                                    <div>BULAN / TAHUN</div>
+                                    <div>${customerData.bulanTahun}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="payment-limit" style="font-size: ${size}">
+                            <u>BATAS PEMBAYARAN SAMPAI TGL 10</u>
+                        </div>
+                        <div class="payment-info" style="background-color: ${headerColor}; font-size: ${parseInt(size)-2}px;">
+                            <div><strong>PEMBAYARAN BISA MELALUI ALFAMART DAN INDOMART</strong></div>
+                            <div><strong>BCA 3770598833 DANA 085872121214</strong></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function printInvoice() {
+            const currentData = {
+                idpel: document.getElementById('idpel').value,
+                nama: document.getElementById('nama').value,
+                kapasitas: document.getElementById('kapasitas').value,
+                area: document.getElementById('area').value,
+                tagihan: document.getElementById('tagihan').value,
+                sisa: document.getElementById('sisa').value,
+                total: document.getElementById('total').value,
+                bulanTahun: document.getElementById('bulanTahun').value
+            };
+
+            const printArea = document.getElementById('print-area');
+            let allInvoices = '';
+            
+            const invoiceCount = parseInt(document.getElementById('invoiceCount').value) || 1;
+            const count = Math.min(10, Math.max(1, invoiceCount));
+            
+            for (let i = 0; i < count; i++) {
+                allInvoices += generateInvoiceHTML(currentData);
+            }
+            
+            printArea.innerHTML = allInvoices;
+            printArea.style.display = 'block';
+            
+            window.print();
+            
+            setTimeout(() => {
+                printArea.style.display = 'none';
+            }, 1000);
+        }
+
+        function printAllCustomers() {
+            if (customers.length === 0) {
+                alert('Belum ada data pelanggan untuk dicetak!');
+                return;
+            }
+
+            const printArea = document.getElementById('print-area');
+            let allInvoices = '';
+            
+            customers.forEach(customer => {
+                allInvoices += generateInvoiceHTML(customer);
+            });
+            
+            printArea.innerHTML = allInvoices;
+            printArea.style.display = 'block';
+            
+            window.print();
+            
+            setTimeout(() => {
+                printArea.style.display = 'none';
+            }, 1000);
+        }
+
+        function downloadPDF() {
+            alert('Fitur download PDF memerlukan library tambahan. Untuk saat ini, silakan gunakan "Print to PDF" dari browser Anda.');
+        }
+
+        // Initialize
+        updatePreview();
+    </script>
+</body>
+</html>
